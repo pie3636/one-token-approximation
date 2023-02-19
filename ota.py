@@ -9,7 +9,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import scipy.spatial.distance
-from transformers import BertModel, BertTokenizer, RobertaModel, RobertaTokenizer, GPT2Tokenizer
+from transformers import BertModel, BertTokenizer, RobertaModel, RobertaTokenizer, CamembertModel, CamembertTokenizer, GPT2Tokenizer, AutoModel, HerbertTokenizer
 
 import utils
 import log
@@ -19,7 +19,9 @@ logger = log.get_logger('root')
 
 MODELS = {
     'bert': (BertModel, BertTokenizer),
-    'roberta': (RobertaModel, RobertaTokenizer)
+    'roberta': (RobertaModel, RobertaTokenizer),
+    'camembert': (CamembertModel, CamembertTokenizer),
+    'herbert': (AutoModel, HerbertTokenizer),
 }
 
 
@@ -80,7 +82,7 @@ def main():
     parser.add_argument('--words', type=str, required=False)
 
     parser.add_argument('--model', default='bert-base-uncased', type=str)
-    parser.add_argument('--model_cls', default='bert', type=str, choices=['bert', 'roberta'])
+    parser.add_argument('--model_cls', default='bert', type=str, choices=['bert', 'roberta', 'camembert', 'herbert'])
 
     parser.add_argument('--seed', default=1234, type=int)
 
@@ -217,7 +219,7 @@ def main():
 
             print('IGS:', input_gold.tokens.shape, 'IIS', input_inference.tokens.shape)
 
-            _, _, layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))
+            layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))['hidden_outputs']
             layers_gold = [layer.detach() for layer in layers_gold]
 
         def overwrite_fct(embds):
@@ -233,11 +235,11 @@ def main():
             if uses_randomization:
                 input_gold, input_inference, index_to_optimize = input_preparator.prepare_batch(batch)
                 with torch.no_grad():
-                    _, _, layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))
+                    layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))['hidden_outputs']
                 layers_gold = [layer.detach() for layer in layers_gold]
 
             model.embeddings.word_embeddings.overwrite_fct = overwrite_fct
-            _, _, layers = model(input_inference.tokens.to(device), input_inference.segments.to(device))
+            layers = model(input_inference.tokens.to(device), input_inference.segments.to(device))['hidden_outputs']
             model.embeddings.word_embeddings.overwrite_fct = None
 
             loss = nn.MSELoss()

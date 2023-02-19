@@ -5,7 +5,7 @@ from typing import Callable, List, Tuple
 from torch import Tensor
 from torch.nn import Module, Embedding
 
-from transformers import PreTrainedTokenizer, BertTokenizer, GPT2Tokenizer
+from transformers import PreTrainedTokenizer, BertTokenizer, GPT2Tokenizer, CamembertTokenizer, HerbertTokenizer
 
 import log
 
@@ -65,8 +65,13 @@ class InputPreparator:
             vocab = tokenizer.vocab.keys()
         elif isinstance(tokenizer, GPT2Tokenizer):
             vocab = tokenizer.encoder.keys()
+        elif isinstance(tokenizer, CamembertTokenizer):
+            sp = tokenizer.sp_model
+            vocab = {sp.id_to_piece(id) for id in range(sp.get_piece_size())}
+        elif isinstance(tokenizer, HerbertTokenizer):
+            vocab = tokenizer.get_vocab().keys()
         else:
-            raise ValueError('Access to vocab is currently only implemented for BertTokenizer and GPT2Tokenizer')
+            raise ValueError('Access to vocab is currently not implemented for {}'.format(tokenizer))
 
         self.words = [x for x in vocab if not filter_callable or filter_callable(x)]
         self.prefix = tokenizer.tokenize(prefix)

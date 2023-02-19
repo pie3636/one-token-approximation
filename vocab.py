@@ -86,7 +86,7 @@ def main():
     parser.add_argument('--input', type=str, required=False)
     parser.add_argument('--output', default=None, type=str, required=True)
     parser.add_argument('--model', default='bert-base-uncased', type=str)
-    parser.add_argument('--model_cls', default='bert', type=str, choices=['bert', 'roberta'])
+    parser.add_argument('--model_cls', default='bert', type=str, choices=['bert', 'roberta', 'camembert', 'herbert'])
     parser.add_argument('--parts', default=0, type=int)
     args = parser.parse_args()
 
