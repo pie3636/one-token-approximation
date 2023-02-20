@@ -219,7 +219,7 @@ def main():
 
             print('IGS:', input_gold.tokens.shape, 'IIS', input_inference.tokens.shape)
 
-            layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))['hidden_outputs']
+            layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))['hidden_states']
             layers_gold = [layer.detach() for layer in layers_gold]
 
         def overwrite_fct(embds):
@@ -235,11 +235,11 @@ def main():
             if uses_randomization:
                 input_gold, input_inference, index_to_optimize = input_preparator.prepare_batch(batch)
                 with torch.no_grad():
-                    layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))['hidden_outputs']
+                    layers_gold = model(input_gold.tokens.to(device), input_gold.segments.to(device))['hidden_states']
                 layers_gold = [layer.detach() for layer in layers_gold]
 
             model.embeddings.word_embeddings.overwrite_fct = overwrite_fct
-            layers = model(input_inference.tokens.to(device), input_inference.segments.to(device))['hidden_outputs']
+            layers = model(input_inference.tokens.to(device), input_inference.segments.to(device))['hidden_states']
             model.embeddings.word_embeddings.overwrite_fct = None
 
             loss = nn.MSELoss()
